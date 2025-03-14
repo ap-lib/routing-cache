@@ -1,8 +1,8 @@
 {
-  "name": "ap-lib/persistent-cache",
-  "description": "Caching of an unchanging array is typically prepared on one computer and used on another",
+  "name": "ap-lib/routing-cache",
+  "description": "Caching of an unchanging routing index is typically prepared on one computer and used on another.\n",
   "type": "library",
-  "homepage": "https://github.com/ap-lib/persistent-cache",
+  "homepage": "https://github.com/ap-lib/routing-cache",
   "license": "MIT",
   "minimum-stability": "dev",
   "prefer-stable": true,
