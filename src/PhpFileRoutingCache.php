@@ -106,20 +106,34 @@ class PhpFileRoutingCache implements RoutingCacheInterface
         $content[] = " */";
         $content[] = "return [";
 
+        $method_max_len = 0;
         foreach ($index->make() as $method => $endpoints) {
-            $content[] = "    '$method' => [";
+            $method_max_len = max($method_max_len, strlen($method));
+        }
+        foreach ($index->make() as $method => $endpoints) {
+            $spaces    = $method_max_len - strlen($method);
+            $spaces    = $spaces ? str_repeat(" ", $spaces) : "";
+            $content[] = "    '$method'$spaces => [";
+
+            $route_max_len_max_len = 0;
             foreach ($endpoints as $route => $serialized) {
+                $route_max_len_max_len = max($route_max_len_max_len, strlen($route));
+            }
+            foreach ($endpoints as $route => $serialized) {
+                $spaces   = $route_max_len_max_len - strlen($route);
+                $spaces   = $spaces ? str_repeat(" ", $spaces) : "";
                 $endpoint = Endpoint::deserialize($serialized);
                 if (empty($endpoint->middleware)) {
                     $calableArray = self::renderCallable($endpoint->handler);
-                    $content[] = "        '" . addslashes($route) . "' => [$calableArray],";
+                    $content[]    = "        '" . addslashes($route) . "'$spaces => [$calableArray],";
                 } else {
-                    $content[] = "        '" . addslashes($route) . "' => [";
+                    $endpointRenderArray = [];
                     foreach (array_merge([$endpoint->handler], $endpoint->middleware) as $el) {
-                        $calableArray = self::renderCallable($el);
-                        $content[]    = "            $calableArray,";
+                        $endpointRenderArray[] = self::renderCallable($el);
                     }
-                    $content[] = "        ],";
+                    $endpointRenderArray = implode(", ", $endpointRenderArray);
+
+                    $content[] = "        '" . addslashes($route) . "' => [$endpointRenderArray],";
                 }
             }
             $content[] = "    ],";

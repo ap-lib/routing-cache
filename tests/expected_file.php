@@ -6,12 +6,9 @@
  * second line comment
  */
 return [
-    'GET' => [
-        '/handler-and-one-middleware' => [
-            [\AP\Routing\Cache\Tests\PhpFilePersistentCacheTest::class, 'handler'],
-            [\AP\Routing\Cache\Tests\PhpFilePersistentCacheTest::class, 'middleware'],
-        ],
-        '/one-handler' => [[\AP\Routing\Cache\Tests\PhpFilePersistentCacheTest::class, 'handler']],
+    'GET'  => [
+        '/handler-and-one-middleware' => [[\AP\Routing\Cache\Tests\PhpFilePersistentCacheTest::class, 'handler'], [\AP\Routing\Cache\Tests\PhpFilePersistentCacheTest::class, 'middleware']],
+        '/one-handler'                => [[\AP\Routing\Cache\Tests\PhpFilePersistentCacheTest::class, 'handler']],
     ],
     'POST' => [
         '/one-handler' => [[\AP\Routing\Cache\Tests\PhpFilePersistentCacheTest::class, 'handler']],

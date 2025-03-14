@@ -45,7 +45,6 @@ final class PhpFilePersistentCacheTest extends TestCase
         $retrieved_array = $cache->get();
 
         $file_content = file_get_contents($filename);
-        unlink($filename);
 
 
         $this->assertEquals(
