@@ -71,6 +71,63 @@ class PhpFileRoutingCache implements RoutingCacheInterface
         return "[\\$callable[0]::class, '$callable[1]']";
     }
 
+    protected function renderArray(array $data, $nestedCount = 0, string $start = "", string $end = ""): array
+    {
+        $prefix  = str_repeat("    ", $nestedCount);
+        $content = [];
+        $max_len = 0;
+        foreach ($data as $k => $v) {
+            $max_len = max($max_len, strlen($k));
+        }
+        $content[] = "$prefix$start" . '[';
+        foreach ($data as $k => $v) {
+            $spaces = $max_len - strlen($k);
+            $spaces = $spaces ? str_repeat(" ", $spaces) : "";
+            foreach ($this->renderElement(
+                $v,
+                $nestedCount + 1,
+                var_export($k, true) . "$spaces => ",
+                ",") as $subEl
+            ) {
+                $content[] = $subEl;
+            }
+        }
+        $content[] = "$prefix]$end";
+
+        return $content;
+    }
+
+    protected function renderElement(mixed $el, $nestedCount = 0, string $start = "", string $end = ""): array
+    {
+        $prefix = str_repeat("    ", $nestedCount);
+
+        if ((is_array($el) && isset($el[0]) && is_callable($el[0])) || is_string($el)) {
+            $endpoint = Endpoint::deserialize($el);
+            try {
+                $endpoint->validateException();
+                $endpointRenderArray = [];
+                foreach (array_merge([$endpoint->handler], $endpoint->middleware) as $el) {
+                    $endpointRenderArray[] = self::renderCallable($el);
+                }
+                return [$prefix . $start . '[' . implode(", ", $endpointRenderArray) . ']' . $end];
+
+            } catch (UnexpectedValueException) {
+            }
+        }
+
+        if (is_array($el)) {
+            return $this->renderArray(
+                $el,
+                $nestedCount,
+                $start,
+                $end,
+            );
+        } elseif (is_string($el) || is_int($el) || is_float($el) || is_null($el) || is_bool($el)) {
+            return [$prefix . $start . var_export($el, true) . $end];
+        }
+        throw new UnexpectedValueException();
+    }
+
     /**
      * @param IndexInterface $index
      * @param string|array $comments
@@ -104,42 +161,13 @@ class PhpFileRoutingCache implements RoutingCacheInterface
         }
 
         $content[] = " */";
-        $content[] = "return [";
 
-        $method_max_len = 0;
-        foreach ($index->make() as $method => $endpoints) {
-            $method_max_len = max($method_max_len, strlen($method));
-        }
-        foreach ($index->make() as $method => $endpoints) {
-            $spaces    = $method_max_len - strlen($method);
-            $spaces    = $spaces ? str_repeat(" ", $spaces) : "";
-            $content[] = "    '$method'$spaces => [";
-
-            $route_max_len_max_len = 0;
-            foreach ($endpoints as $route => $serialized) {
-                $route_max_len_max_len = max($route_max_len_max_len, strlen($route));
-            }
-            foreach ($endpoints as $route => $serialized) {
-                $spaces   = $route_max_len_max_len - strlen($route);
-                $spaces   = $spaces ? str_repeat(" ", $spaces) : "";
-                $endpoint = Endpoint::deserialize($serialized);
-                if (empty($endpoint->middleware)) {
-                    $calableArray = self::renderCallable($endpoint->handler);
-                    $content[]    = "        '" . addslashes($route) . "'$spaces => [$calableArray],";
-                } else {
-                    $endpointRenderArray = [];
-                    foreach (array_merge([$endpoint->handler], $endpoint->middleware) as $el) {
-                        $endpointRenderArray[] = self::renderCallable($el);
-                    }
-                    $endpointRenderArray = implode(", ", $endpointRenderArray);
-
-                    $content[] = "        '" . addslashes($route) . "' => [$endpointRenderArray],";
-                }
-            }
-            $content[] = "    ],";
-        }
-
-        $content[] = "];";
+        $content = array_merge($content, $this->renderArray(
+            $index->make(),
+            0,
+            "return ",
+            ";"
+        ));
 
         $res = file_put_contents(
             $this->getFilename(),

@@ -9,7 +9,7 @@ use AP\Routing\Routing\Endpoint;
 use AP\Routing\Routing\Routing\Hashmap\Hashmap;
 use PHPUnit\Framework\TestCase;
 
-final class PhpFilePersistentCacheTest extends TestCase
+final class MainTest extends TestCase
 {
     public function testBasic(): void
     {
@@ -23,11 +23,11 @@ final class PhpFilePersistentCacheTest extends TestCase
         ));
 
         $index->addEndpoint(Method::GET, "/one-handler", new Endpoint(
-            [PhpFilePersistentCacheTest::class, "handler"]
+            [MainTest::class, "handler"]
         ));
 
         $index->addEndpoint(Method::POST, "/one-handler", new Endpoint(
-            [PhpFilePersistentCacheTest::class, "handler"]
+            [MainTest::class, "handler"]
         ));
         // Set up the cache object (in this case, it's just a filename)
         $cache = new PhpFileRoutingCache($filename);

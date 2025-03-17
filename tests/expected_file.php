@@ -7,10 +7,10 @@
  */
 return [
     'GET'  => [
-        '/handler-and-one-middleware' => [[\AP\Routing\Cache\Tests\PhpFilePersistentCacheTest::class, 'handler'], [\AP\Routing\Cache\Tests\PhpFilePersistentCacheTest::class, 'middleware']],
-        '/one-handler'                => [[\AP\Routing\Cache\Tests\PhpFilePersistentCacheTest::class, 'handler']],
+        '/handler-and-one-middleware' => [[\AP\Routing\Cache\Tests\MainTest::class, 'handler'], [\AP\Routing\Cache\Tests\MainTest::class, 'middleware']],
+        '/one-handler'                => [[\AP\Routing\Cache\Tests\MainTest::class, 'handler']],
     ],
     'POST' => [
-        '/one-handler' => [[\AP\Routing\Cache\Tests\PhpFilePersistentCacheTest::class, 'handler']],
+        '/one-handler' => [[\AP\Routing\Cache\Tests\MainTest::class, 'handler']],
     ],
 ];
